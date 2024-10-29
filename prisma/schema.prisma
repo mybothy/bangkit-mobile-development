@@ -12,3 +12,116 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id             Int              @id @default(autoincrement())
+  username       String           @unique
+  email          String           @unique
+  passwordHash   String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  goal           String?
+  foodScans      FoodScan[]       @relation("UserFoodScans")
+  foodHistory    FoodHistory[]    @relation("UserFoodHistory")
+  points         Point[]          @relation("UserPoints")
+  userRewards    UserReward[]     @relation("UserRewards")
+  workouts       UserWorkout[]    @relation("UserWorkouts")
+  personalization Personalization?
+
+  @@map("users")
+}
+
+model FoodScan {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation("UserFoodScans", fields: [userId], references: [id])
+  userId         Int
+  foodName       String
+  calories       Decimal
+  protein        Decimal
+  otherNutrients Json?
+  scanDate       DateTime         @default(now())
+
+  @@map("food_scans")
+}
+
+model FoodHistory {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation("UserFoodHistory", fields: [userId], references: [id])
+  userId         Int
+  foodName       String
+  quantity       Int
+  calories       Decimal
+  protein        Decimal
+  entryDate      DateTime         @default(now())
+
+  @@map("food_history")
+}
+
+model Point {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation("UserPoints", fields: [userId], references: [id])
+  userId         Int
+  activityType   ActivityType
+  points         Int
+  activityDate   DateTime         @default(now())
+
+  @@map("points")
+}
+
+model Reward {
+  id             Int              @id @default(autoincrement())
+  name           String
+  pointsRequired Int
+  description    String?
+  availability   Boolean          @default(true)
+  userRewards    UserReward[]     @relation("UserRewards")
+
+  @@map("rewards")
+}
+
+model UserReward {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation("UserRewards", fields: [userId], references: [id])
+  userId         Int
+  reward         Reward           @relation("UserRewards", fields: [rewardId], references: [id])
+  rewardId       Int
+  redeemedAt     DateTime         @default(now())
+
+  @@map("user_rewards")
+}
+
+model Newsletter {
+  id             Int              @id @default(autoincrement())
+  title          String
+  content        String
+  publishDate    DateTime         @default(now())
+  tags           Json?
+
+  @@map("newsletters")
+}
+
+model UserWorkout {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation("UserWorkouts", fields: [userId], references: [id])
+  userId         Int
+  exerciseType   String
+  reps           Int
+  sessionDate    DateTime         @default(now())
+
+  @@map("user_workouts")
+}
+
+model Personalization {
+  id             Int              @id @default(autoincrement())
+  user           User             @relation(fields: [userId], references: [id])
+  userId         Int              @unique
+  preference     Json
+
+  @@map("personalizations")
+}
+
+enum ActivityType {
+  SCAN
+  WORKOUT
+}

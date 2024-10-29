@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private jwtService: JwtService,
-    private readonly prismaService: PrismaService,
-  ) {}
+  constructor(private jwtService: JwtService) {}
 
   async signIn(email: string, pass: string): Promise<{ access_token: string }> {
     // Sign In Logic Here
